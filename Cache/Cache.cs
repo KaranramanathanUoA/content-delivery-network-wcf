@@ -8,6 +8,8 @@ using System.Drawing;
 using System.Windows.Forms;
 using System.Collections.Generic;
 
+/* Service contract between the client and the cache. This service contract allows operations like displaying the files already present in the cache 
+   as well as operations to download the files present in the cache */
 [ServiceContract()]
 public interface ICacheService
 {
@@ -20,7 +22,10 @@ public interface ICacheService
     byte[] DownloadFiles(string fileName);
 }
 
-[ServiceContract()]
+/* The client program interacts with the server through the cache. That is, when the client wants to browse the list of files available on the server 
+   or to download a file from the server, the client’s requests are sent to the  cache first and the cache forwards the requests to the server.
+   We need this interface  to create a channel to the server and download a file requested by the client if it is not present 
+   in the Cache. */
 public interface IClientServerService
 {
     [OperationContract()]
@@ -34,9 +39,6 @@ public interface IClientServerService
 public class CacheService : ICacheService
 {
     public static List<string> stringList = new List<string>();
-    public static Func<int> Tid = () => Thread.CurrentThread.ManagedThreadId;
-
-    public static Func<double> Millis = () => DateTime.Now.TimeOfDay.TotalMilliseconds;
 
     public string[] DisplayFiles()
     {
@@ -54,12 +56,13 @@ public class CacheService : ICacheService
         if (File.Exists(filePath))
         {
             byte[] buffer = File.ReadAllBytes(filePath);
-            
+            // If file exists in cache, return the file from cache and log appropriate response.
             stringList.Add(String.Format("User Request: File {0} at {1}, Response: Cached file {2} ", Path.GetFileName(fileName), DateTime.Now.ToString(), Path.GetFileName(fileName)));
             return buffer;
         }
         else
         {
+            // If file not present in cache, make a request to the server using a WebChannelFactory and get the file from the server and log appropriate response.
             stringList.Add(String.Format("User Request: File {0} at {1}, Response: File {2} downloaded from the server", Path.GetFileName(fileName), DateTime.Now.ToString(), Path.GetFileName(fileName)));
             using (var wcf2 =
             new WebChannelFactory<IClientServerService>(new Uri("http://localhost:8082/hello")))
@@ -100,6 +103,7 @@ public class Form1 : System.Windows.Forms.Form
 
     private void clearCacheContentsButton_Click(object sender, EventArgs e)
     {
+        // contains code to clear files present in Cache.
         string currentPath = Directory.GetCurrentDirectory();
         System.IO.DirectoryInfo di = new DirectoryInfo(currentPath + "\\CacheFiles\\");
         foreach (FileInfo file in di.EnumerateFiles())
@@ -158,6 +162,7 @@ public class Form1 : System.Windows.Forms.Form
 
     private void PopulateListView()
     {
+        // Displays all the files present in the Cache
         ListViewItem filesInDirectory = new ListViewItem();
         listView1.Columns.Add("Cached Files", -2, HorizontalAlignment.Left);
         string path = Directory.GetCurrentDirectory();
@@ -208,6 +213,7 @@ public partial class Form2 : Form
 
     private void PopulateListView()
     {
+        // Code to display the logs in the cache GUI
         listView2.Columns.Add("Cache Log", -2, HorizontalAlignment.Left);
         string[] CacheLog = CacheService.stringList.ToArray();
         
