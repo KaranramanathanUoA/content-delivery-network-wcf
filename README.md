@@ -4,7 +4,7 @@ The files hosted by the server are present in the folder called â€˜ServerFilesâ€
 
 ## Software required to run this module:
 - The bat files use the command csc (C# Compiler) to compile the code. This can be downloaded from https://visualstudio.microsoft.com/downloads/ by navigating to Build Tools for Visual Studio 2019 under Tools for Visual Studio 2019
--Text editor like Visual Studio Code or Visual Studio
+- Text editor like Visual Studio Code or Visual Studio
 
 ## Instructions to run:
 
